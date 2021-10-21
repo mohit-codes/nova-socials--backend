@@ -1,0 +1,27 @@
+{
+  "name": "twitter-clone--backend",
+  "version": "1.0.0",
+  "description": "backend repository for twitter clone",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mohit-codes/twitter-clone--backend.git"
+  },
+  "author": "mohit-codes",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/mohit-codes/twitter-clone--backend/issues"
+  },
+  "homepage": "https://github.com/mohit-codes/twitter-clone--backend#readme",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^10.0.0",
+    "express": "^4.17.1",
+    "jsonwebtoken": "^8.5.1",
+    "mongoose": "^6.0.11"
+  }
+}
