@@ -36,7 +36,7 @@ const likePost = async (req, res) => {
   }
 };
 
-const dislikePost = async (req, res) => {
+const unlikePost = async (req, res) => {
   const { userId, postId } = req.body;
   try {
     const user = await User.findById(userId);
@@ -78,4 +78,58 @@ const commentPost = async (req, res) => {
   }
 };
 
-module.exports = { likePost, commentPost, createPost, dislikePost };
+const deletePost = async (req, res) => {
+  try {
+    const postId = req.params.postId;
+    await Post.findByIdAndDelete(postId);
+    return res.status(200).json({ success: true, message: "post deleted" });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+const fetchLikes = async (req, res) => {
+  try {
+    const postId = req.params.postId;
+    const post = await Post.findById(postId);
+    if (!post) {
+      return res.json({
+        success: false,
+        message: "Invalid Id, post not found",
+      });
+    }
+    const likes = await User.find(
+      { _id: { $in: post.likes } },
+      "_id name username"
+    );
+    return res.status(200).json({ success: true, likes: likes });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+const fetchComments = async (req, res) => {
+  try {
+    const postId = req.params.postId;
+    const post = await Post.findById(postId);
+    if (!post) {
+      return res.json({
+        success: false,
+        message: "Invalid Id, post not found",
+      });
+    }
+    const comments = await Comment.find({ postId: post._id });
+    return res.status(200).json({ success: true, comments: comments });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+module.exports = {
+  likePost,
+  commentPost,
+  createPost,
+  unlikePost,
+  deletePost,
+  fetchLikes,
+  fetchComments,
+};
