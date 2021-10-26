@@ -102,6 +102,19 @@ const searchById = async (req, res, next, userId) => {
   }
 };
 
+const getSingleUserInfo = async (req, res) => {
+  try {
+    const { user } = req;
+    return res.json({ success: true, user: user });
+  } catch (error) {
+    res.json({
+      success: false,
+      message: "Failed to Update User",
+      errorMessage: error.message,
+    });
+  }
+};
+
 const updateCurrentUserDetails = async (req, res) => {
   try {
     let userUpdate = req.body;
@@ -151,8 +164,54 @@ const follow = async (req, res) => {
 const fetchUserPosts = async (req, res) => {
   try {
     const { user } = req;
-    const posts = Post.find({ author: user._id });
+    const posts = await Post.find({ author: user._id });
     return res.json({ success: true, posts: posts });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+const fetchUserFollowers = async (req, res) => {
+  try {
+    const { user } = req;
+    const followers = await User.find(
+      { _id: { $in: user.followers } },
+      "_id name username"
+    );
+    return res.json({ success: true, followers: followers });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+const fetchUserFollowing = async (req, res) => {
+  try {
+    const { user } = req;
+    const following = await User.find(
+      { _id: { $in: user.following } },
+      "_id name username"
+    );
+    return res.json({ success: true, following: following });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+const getUserFeed = async (req, res) => {
+  try {
+    const { user } = req;
+    let feed = [];
+    let posts = await Post.find({ author: user._id });
+    feed.push(posts);
+    for (const _user of user.following) {
+      posts = await Post.find({ author: _user._id });
+      feed.push(posts);
+    }
+    feed = feed.flat();
+    feed.sort((a, b) => {
+      return new Date(a.createdAt) - new Date(b.createdAt);
+    });
+    return res.json({ success: true, feed: feed });
   } catch (error) {
     return res.status(500).json({ success: false, message: error.message });
   }
@@ -165,4 +224,8 @@ module.exports = {
   searchById,
   follow,
   fetchUserPosts,
+  fetchUserFollowers,
+  fetchUserFollowing,
+  getUserFeed,
+  getSingleUserInfo,
 };
