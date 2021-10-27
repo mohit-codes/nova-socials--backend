@@ -17,7 +17,8 @@ Backend repository for social media web app using ExpressJS connected to MongoDB
 - GET /users/following/:userId - fetch user following (_id name username). 
 - GET /users/get-user-posts/:userId - fetch user posts.
 - PUT /users/update/:userId - update user profile info.
-
+- GET /users/notifications/:userId - fetch list of user notifications.
+  
 ### Posts
 
 - POST /posts/new - Takes author(userId), content to create new post.
@@ -26,4 +27,3 @@ Backend repository for social media web app using ExpressJS connected to MongoDB
 - DELETE /posts/:postId - delete post.
 - GET /posts/likes/:postId - fetch list of users liked the post.
 - GET /posts/comments/:posts - fetch comments of posts.
-- GET /users/notifications/:userId - fetch list of user notifications.
