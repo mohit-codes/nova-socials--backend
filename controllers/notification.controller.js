@@ -3,13 +3,23 @@ const { User } = require("../models/user.model");
 
 const newNotification = async (targetId, sourceId, type, postId) => {
   try {
-    const notification = new Notification({
-      targetId: targetId,
-      sourceId: sourceId,
-      isRead: false,
-      type: type,
-      postId: postId,
-    });
+    let notification;
+    if (postId === 0) {
+      notification = new Notification({
+        targetId: targetId,
+        sourceId: sourceId,
+        isRead: false,
+        type: type,
+      });
+    } else {
+      notification = new Notification({
+        targetId: targetId,
+        sourceId: sourceId,
+        isRead: false,
+        type: type,
+        postId: postId,
+      });
+    }
     await notification.save();
   } catch (error) {
     console.log(error);
