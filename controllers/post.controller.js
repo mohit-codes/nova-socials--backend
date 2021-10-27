@@ -1,6 +1,7 @@
 const { User } = require("../models/user.model");
 const { Post } = require("../models/post.model");
 const { Comment } = require("../models/comment.model");
+const { newNotification } = require("./notification.controller");
 
 const createPost = async (req, res) => {
   const { author, content } = req.body;
@@ -11,7 +12,9 @@ const createPost = async (req, res) => {
     }
     let newPost = new Post({ author: author, content: content });
     await newPost.save();
-    return res.status(200).json({ success: true, message: "post created" });
+    return res
+      .status(200)
+      .json({ success: true, message: "post created", post: newPost });
   } catch (error) {
     return res.status(500).json({ success: false, message: error.message });
   }
@@ -28,6 +31,7 @@ const likePost = async (req, res) => {
     if (!post) {
       return res.json({ success: false, massage: "User not found" });
     }
+    await newNotification(post.author, user._id, "LIKED", postId);
     post.likes.push(user._id);
     await post.save();
     return res.status(200).json({ success: true, message: "post liked" });
@@ -72,7 +76,10 @@ const commentPost = async (req, res) => {
       postId: post._id,
     });
     await newComment.save();
-    return res.status(200).json({ success: true, message: "comment added" });
+    await newNotification(post.author, user._id, "NEW_COMMENT", postId);
+    return res
+      .status(200)
+      .json({ success: true, message: "comment added", comment: comment });
   } catch (error) {
     return res.status(500).json({ success: false, message: error.message });
   }
