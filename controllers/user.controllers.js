@@ -4,6 +4,7 @@ const { Post } = require("../models/post.model");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const { extend } = require("lodash");
+const { newNotification } = require("./notification.controller");
 
 const login = async (req, res) => {
   const { email, password } = req.body;
@@ -152,6 +153,7 @@ const follow = async (req, res) => {
     if (!sourceUser) {
       return res.json({ success: false, message: "Invalid Source Id" });
     }
+    await newNotification(targetId, sourceId, "NEW_FOLLOWER", 0);
     targetUser.followers.push(sourceId);
     sourceUser.following.push(targetUser);
     await targetUser.save();
