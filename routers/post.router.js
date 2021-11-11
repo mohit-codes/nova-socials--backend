@@ -15,5 +15,7 @@ router.route("/like").post(likePost);
 router.route("/comment").post(commentPost);
 router.route("/unlike").post(unlikePost);
 router.route("/likes/:postId").get(fetchLikes);
-router.router("/comments/:postId").get(fetchComments);
+router.route("/comments/:postId").get(fetchComments);
 router.route("/delete/:postId").delete(deletePost);
+
+module.exports = router;
