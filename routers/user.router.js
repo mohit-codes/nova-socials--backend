@@ -22,7 +22,7 @@ router.route("/signup").post(signup);
 router.route("/follow").post(follow);
 
 router.param("userId", searchById);
-router.param("/:userId").get(getSingleUserInfo);
+router.route("/:userId").get(getSingleUserInfo);
 router.route("/feed/:userId").get(getUserFeed);
 router.route("/followers/:userId").get(fetchUserFollowers);
 router.route("/following/:userId").get(fetchUserFollowing);
