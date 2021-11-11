@@ -1,6 +1,6 @@
 require("dotenv").config();
-const { User } = require("../models/user.model");
-const { Post } = require("../models/post.model");
+const User = require("../models/user.model");
+const Post = require("../models/post.model");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const { extend } = require("lodash");
@@ -17,7 +17,7 @@ const login = async (req, res) => {
     if (isPasswordCorrect) {
       const token = jwt.sign(
         { id: user._id, name: user.name },
-        process.env.secret
+        process.env.JWT_SECRET
       );
       return res.json({
         success: true,
@@ -43,7 +43,7 @@ const login = async (req, res) => {
 
 const signup = async (req, res) => {
   const { name, username, email, password } = req.body;
-  const user = await User.findOne({ email: email }).catch((err) => {
+  let user = await User.findOne({ email: email }).catch((err) => {
     console.log(err);
   });
   if (user) {
@@ -52,6 +52,17 @@ const signup = async (req, res) => {
       user: null,
       success: false,
       message: "Account with email already exists, Try logging in instead!",
+    });
+  }
+  user = await User.findOne({ username: username }).catch((err) => {
+    console.log(err);
+  });
+  if (user) {
+    return res.json({
+      token: null,
+      user: null,
+      success: false,
+      message: "Account with username already exists",
     });
   }
   try {
@@ -66,7 +77,7 @@ const signup = async (req, res) => {
     const savedUser = await newUser.save();
     const token = jwt.sign(
       { id: savedUser._id, name: savedUser.name },
-      process.env.secret
+      process.env.JWT_SECRET
     );
 
     return res.json({
@@ -158,6 +169,7 @@ const follow = async (req, res) => {
     sourceUser.following.push(targetUser);
     await targetUser.save();
     await sourceUser.save();
+    return res.json({ success: true, targetUserId: targetUser._id });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
@@ -202,14 +214,23 @@ const fetchUserFollowing = async (req, res) => {
 const getUserFeed = async (req, res) => {
   try {
     const { user } = req;
-    let feed = [];
+    let tempFeed = [];
     let posts = await Post.find({ author: user._id });
-    feed.push(posts);
+    tempFeed.push(posts);
     for (const _user of user.following) {
       posts = await Post.find({ author: _user._id });
-      feed.push(posts);
+      tempFeed.push(posts);
     }
-    feed = feed.flat();
+    tempFeed = tempFeed.flat();
+    let feed = [];
+    for (const post of tempFeed) {
+      let author = await User.findById(post.author);
+      feed.push({
+        ...post._doc,
+        authorName: author.name,
+        authorUsername: user.username,
+      });
+    }
     feed.sort((a, b) => {
       return new Date(a.createdAt) - new Date(b.createdAt);
     });
