@@ -1,7 +1,7 @@
-const { User } = require("../models/user.model");
-const { Post } = require("../models/post.model");
-const { Comment } = require("../models/comment.model");
-const { newNotification } = require("./notification.controller");
+const User = require("../models/user.model");
+const Post = require("../models/post.model");
+const Comment = require("../models/comment.model");
+const newNotification = require("./notification.controller");
 
 const createPost = async (req, res) => {
   const { author, content } = req.body;
@@ -12,9 +12,15 @@ const createPost = async (req, res) => {
     }
     let newPost = new Post({ author: author, content: content });
     await newPost.save();
-    return res
-      .status(200)
-      .json({ success: true, message: "post created", post: newPost });
+    return res.status(200).json({
+      success: true,
+      message: "post created",
+      post: {
+        ...newPost._doc,
+        authorName: user.name,
+        authorUsername: user.username,
+      },
+    });
   } catch (error) {
     return res.status(500).json({ success: false, message: error.message });
   }
@@ -34,7 +40,12 @@ const likePost = async (req, res) => {
     await newNotification(post.author, user._id, "LIKED", postId);
     post.likes.push(user._id);
     await post.save();
-    return res.status(200).json({ success: true, message: "post liked" });
+    return res.status(200).json({
+      success: true,
+      message: "post liked",
+      postId: post._id,
+      likedBy: { _id: user._id, name: user.name, username: user.username },
+    });
   } catch (error) {
     return res.status(500).json({ success: false, message: error.message });
   }
@@ -51,9 +62,12 @@ const unlikePost = async (req, res) => {
     if (!post) {
       return res.json({ success: false, massage: "User not found" });
     }
-    post.likes.slice(user._id);
+    const index = post.likes.indexOf(user._id);
+    post.likes.splice(index, 1);
     await post.save();
-    return res.status(200).json({ success: true, message: "post disliked" });
+    return res
+      .status(200)
+      .json({ success: true, message: "post disliked", unlikeBy: user._id });
   } catch (error) {
     return res.status(500).json({ success: false, message: error.message });
   }
@@ -70,12 +84,14 @@ const commentPost = async (req, res) => {
     if (!post) {
       return res.json({ success: false, massage: "User not found" });
     }
-    const newComment = new Comment({
+    let newComment = new Comment({
       comment: comment,
       commentBy: user._id,
       postId: post._id,
     });
-    await newComment.save();
+    newComment = await newComment.save();
+    post.comments.push(newComment._id);
+    await post.save();
     await newNotification(post.author, user._id, "NEW_COMMENT", postId);
     return res
       .status(200)
@@ -89,7 +105,9 @@ const deletePost = async (req, res) => {
   try {
     const postId = req.params.postId;
     await Post.findByIdAndDelete(postId);
-    return res.status(200).json({ success: true, message: "post deleted" });
+    return res
+      .status(200)
+      .json({ success: true, message: "post deleted", PostId: postId });
   } catch (error) {
     return res.status(500).json({ success: false, message: error.message });
   }
