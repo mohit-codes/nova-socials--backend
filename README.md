@@ -25,6 +25,8 @@ Backend repository for social media web app using ExpressJS connected to MongoDB
 - POST /posts/like - Takes postId and userId.
 - POST /posts/unlike - Takes postId and userId.
 - POST /posts/comment - Takes postId, userId and comment.
+- DELETE /posts/comment/:commentId - delete comment.
+- GET /posts/:posts - fetch single post.
 - DELETE /posts/:postId - delete post.
 - GET /posts/likes/:postId - fetch list of users liked the post.
 - GET /posts/comments/:posts - fetch comments of posts.
