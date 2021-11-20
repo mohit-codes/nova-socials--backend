@@ -225,8 +225,12 @@ const getUserFeed = async (req, res) => {
     let feed = [];
     for (const post of tempFeed) {
       let author = await User.findById(post.author);
+      const isLikedByUser = post.likes.some(
+        (id) => id.toString() === user._id.toString()
+      );
       feed.push({
         ...post._doc,
+        isLikedByUser: isLikedByUser,
         authorName: author.name,
         authorUsername: user.username,
       });
