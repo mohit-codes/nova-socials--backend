@@ -38,6 +38,7 @@ const fetchSinglePost = async (req, res) => {
         ...post._doc,
         authorName: user.name,
         authorUsername: user.username,
+        authorProfileUrl: user.profileUrl,
       },
     });
   } catch (error) {
@@ -58,6 +59,7 @@ const updatePost = async (req, res) => {
         ...post._doc,
         authorName: user.name,
         authorUsername: user.username,
+        authorProfileUrl: user.profileUrl,
       },
     });
   } catch (error) {
@@ -104,9 +106,12 @@ const unlikePost = async (req, res) => {
     const index = post.likes.indexOf(user._id);
     post.likes.splice(index, 1);
     await post.save();
-    return res
-      .status(200)
-      .json({ success: true, message: "post disliked", unlikeBy: user._id });
+    return res.status(200).json({
+      success: true,
+      message: "post disliked",
+      unlikeBy: user._id,
+      postId: post._id,
+    });
   } catch (error) {
     return res.status(500).json({ success: false, message: error.message });
   }
@@ -139,6 +144,7 @@ const commentPost = async (req, res) => {
         ...newComment._doc,
         commenterName: user.name,
         commenterUsername: user.username,
+        commenterProfileUrl: user.profileUrl,
       },
     });
   } catch (error) {
@@ -197,7 +203,7 @@ const fetchLikes = async (req, res) => {
     }
     const likes = await User.find(
       { _id: { $in: post.likes } },
-      "_id name username"
+      "_id name username profileUrl"
     );
     return res.status(200).json({ success: true, likes: likes });
   } catch (error) {
@@ -223,6 +229,7 @@ const fetchComments = async (req, res) => {
         ...comment._doc,
         commenterName: user.name,
         commenterUsername: user.username,
+        commenterProfileUrl: user.profileUrl,
       });
     }
     return res.status(200).json({ success: true, comments: result });
