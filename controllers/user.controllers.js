@@ -167,9 +167,17 @@ const follow = async (req, res) => {
     if (!sourceUser) {
       return res.json({ success: false, message: "Invalid Source Id" });
     }
+    const alreadyExist =
+      targetUser.followers.indexOf(sourceUser._id) === -1 ? false : true;
+    if (alreadyExist) {
+      return res.status(409).json({
+        success: false,
+        message: "source user already follows target user",
+      });
+    }
     await newNotification(targetId, sourceId, "NEW_FOLLOWER", 0);
-    targetUser.followers.push(sourceId);
-    sourceUser.following.push(targetUser);
+    targetUser.followers.push(sourceUser._id);
+    sourceUser.following.push(targetUser._id);
     await targetUser.save();
     await sourceUser.save();
     return res.json({ success: true, targetUserId: targetUser._id });
@@ -190,9 +198,15 @@ const unFollow = async (req, res) => {
       return res.json({ success: false, message: "Invalid Source Id" });
     }
     let index = targetUser.followers.indexOf(sourceId);
+    if (index === -1) {
+      return res.json({
+        success: false,
+        message: "source user not follows target user",
+      });
+    }
     targetUser.followers.splice(index, 1);
     index = sourceUser.following.indexOf(targetId);
-    sourceUser.following.push(index, 1);
+    sourceUser.following.splice(index, 1);
     await targetUser.save();
     await sourceUser.save();
     return res.json({ success: true, targetUserId: targetUser._id });
@@ -298,7 +312,7 @@ const getUserFeed = async (req, res) => {
       });
     }
     feed.sort((a, b) => {
-      return new Date(a.createdAt) - new Date(b.createdAt);
+      return new Date(b.createdAt) - new Date(a.createdAt);
     });
     return res.json({ success: true, feed: feed });
   } catch (error) {
