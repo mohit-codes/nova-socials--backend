@@ -19,6 +19,7 @@ const createPost = async (req, res) => {
         ...newPost._doc,
         authorName: user.name,
         authorUsername: user.username,
+        authorProfileUrl: user.profileUrl,
       },
     });
   } catch (error) {
