@@ -11,11 +11,12 @@ Backend repository for social media web app using ExpressJS connected to MongoDB
 - POST /users/login - Takes username and password as a parameter and returns JWT.
 - POST /users/signup - Providing name, username, password, and email would add a new user into the database.
 - POST /users/follow - Take targetId(followed user) and sourceId(following user).
+- POST /users/unfollow - Take targetId(followed user) and sourceId(following user).
 - GET /users/:userId - fetch single user info.
 - GET /users/feed/:userId - fetch user feed.
-- GET /users/followers/:userId - fetch user followers (_id name username). 
-- GET /users/following/:userId - fetch user following (_id name username). 
-- GET /users/get-user-posts/:userId - fetch user posts.
+- GET /users/followers - fetch user followers.
+- GET /users/following - fetch user following.
+- GET /users/get-user-posts - fetch user posts.
 - PUT /users/update/:userId - update user profile info.
 - GET /users/notifications/:userId - fetch list of user notifications.
   

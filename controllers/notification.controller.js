@@ -37,12 +37,14 @@ const fetchUserNotifications = async (req, res) => {
       });
     }
     let result = [];
-    const notifications = await Notification.find({ targetId: userId });
+    const notifications = await Notification.find({ targetId: userId }).sort({
+      createdAt: -1,
+    });
     for (const notification of notifications) {
       const _user = await User.findById(notification.sourceId);
       result.push({
-        ...notification,
-        sourceUserName: _user.username,
+        ...notification._doc,
+        sourceName: _user.name,
       });
     }
     return res.json({ success: true, notifications: result });

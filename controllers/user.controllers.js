@@ -72,6 +72,9 @@ const signup = async (req, res) => {
       username: username,
       email: email,
       password: hashedPassword,
+      bio: "Hi there! I'm using Nova Socials",
+      profileUrl:
+        "https://res.cloudinary.com/formula-web-apps/image/upload/v1623766149/148-1486972_mystery-man-avatar-circle-clipart_kldmy3.jpg",
     });
 
     const savedUser = await newUser.save();
@@ -164,9 +167,46 @@ const follow = async (req, res) => {
     if (!sourceUser) {
       return res.json({ success: false, message: "Invalid Source Id" });
     }
+    const alreadyExist =
+      targetUser.followers.indexOf(sourceUser._id) === -1 ? false : true;
+    if (alreadyExist) {
+      return res.status(409).json({
+        success: false,
+        message: "source user already follows target user",
+      });
+    }
     await newNotification(targetId, sourceId, "NEW_FOLLOWER", 0);
-    targetUser.followers.push(sourceId);
-    sourceUser.following.push(targetUser);
+    targetUser.followers.push(sourceUser._id);
+    sourceUser.following.push(targetUser._id);
+    await targetUser.save();
+    await sourceUser.save();
+    return res.json({ success: true, targetUserId: targetUser._id });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+const unFollow = async (req, res) => {
+  try {
+    const { targetId, sourceId } = req.body;
+    const targetUser = await User.findById(targetId);
+    if (!targetUser) {
+      return res.json({ success: false, message: "Invalid Target Id" });
+    }
+    const sourceUser = await User.findById(sourceId);
+    if (!sourceUser) {
+      return res.json({ success: false, message: "Invalid Source Id" });
+    }
+    let index = targetUser.followers.indexOf(sourceId);
+    if (index === -1) {
+      return res.json({
+        success: false,
+        message: "source user not follows target user",
+      });
+    }
+    targetUser.followers.splice(index, 1);
+    index = sourceUser.following.indexOf(targetId);
+    sourceUser.following.splice(index, 1);
     await targetUser.save();
     await sourceUser.save();
     return res.json({ success: true, targetUserId: targetUser._id });
@@ -177,9 +217,26 @@ const follow = async (req, res) => {
 
 const fetchUserPosts = async (req, res) => {
   try {
-    const { user } = req;
+    const { userId, clientId } = req.body;
+    const user = await User.findById(userId);
     const posts = await Post.find({ author: user._id });
-    return res.json({ success: true, posts: posts });
+    let userPosts = [];
+
+    for (const post of posts) {
+      const isLikedByUser = post.likes.some(
+        (id) => id.toString() === clientId.toString()
+      );
+
+      userPosts.push({
+        ...post._doc,
+        isLikedByUser: isLikedByUser,
+        authorName: user.name,
+        authorUsername: user.username,
+        authorProfileUrl: user.profileUrl,
+      });
+    }
+
+    return res.json({ success: true, posts: userPosts });
   } catch (error) {
     return res.status(500).json({ success: false, message: error.message });
   }
@@ -187,12 +244,21 @@ const fetchUserPosts = async (req, res) => {
 
 const fetchUserFollowers = async (req, res) => {
   try {
-    const { user } = req;
+    const { userId, clientId } = req.body;
+    const user = await User.findById(userId);
+    const client = await User.findById(clientId);
     const followers = await User.find(
       { _id: { $in: user.followers } },
-      "_id name username"
+      "_id name username profileUrl"
     );
-    return res.json({ success: true, followers: followers });
+    let result = [];
+    for (const obj of followers) {
+      const isFollowedByClient = client.following.some(
+        (id) => obj.id.toString() === id.toString()
+      );
+      result.push({ ...obj._doc, isFollowedByClient });
+    }
+    return res.json({ success: true, followers: result });
   } catch (error) {
     return res.status(500).json({ success: false, message: error.message });
   }
@@ -200,12 +266,21 @@ const fetchUserFollowers = async (req, res) => {
 
 const fetchUserFollowing = async (req, res) => {
   try {
-    const { user } = req;
+    const { userId, clientId } = req.body;
+    const user = await User.findById(userId);
+    const client = await User.findById(clientId);
     const following = await User.find(
       { _id: { $in: user.following } },
-      "_id name username"
+      "_id name username profileUrl"
     );
-    return res.json({ success: true, following: following });
+    let result = [];
+    for (const obj of following) {
+      const isFollowedByClient = client.following.some(
+        (id) => obj.id.toString() === id.toString()
+      );
+      result.push({ ...obj._doc, isFollowedByClient });
+    }
+    return res.json({ success: true, following: result });
   } catch (error) {
     return res.status(500).json({ success: false, message: error.message });
   }
@@ -233,12 +308,26 @@ const getUserFeed = async (req, res) => {
         isLikedByUser: isLikedByUser,
         authorName: author.name,
         authorUsername: user.username,
+        authorProfileUrl: user.profileUrl,
       });
     }
     feed.sort((a, b) => {
-      return new Date(a.createdAt) - new Date(b.createdAt);
+      return new Date(b.createdAt) - new Date(a.createdAt);
     });
     return res.json({ success: true, feed: feed });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+const fetchRecentlyJoinedUsers = async (req, res) => {
+  try {
+    const { user } = req;
+    const users = await User.find(
+      { $and: [{ _id: { $nin: user.following } }, { _id: { $ne: user._id } }] },
+      "id name username profileUrl"
+    );
+    return res.json({ success: true, users: users });
   } catch (error) {
     return res.status(500).json({ success: false, message: error.message });
   }
@@ -248,8 +337,10 @@ module.exports = {
   login,
   signup,
   updateCurrentUserDetails,
+  fetchRecentlyJoinedUsers,
   searchById,
   follow,
+  unFollow,
   fetchUserPosts,
   fetchUserFollowers,
   fetchUserFollowing,
