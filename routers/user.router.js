@@ -17,12 +17,14 @@ const {
   fetchUserFollowing,
   getSingleUserInfo,
   fetchRecentlyJoinedUsers,
+  searchUser,
 } = require("../controllers/user.controllers");
 
 router.route("/login").post(login);
 router.route("/signup").post(signup);
 router.route("/follow").post(follow);
 router.route("/unfollow").post(unFollow);
+router.route("/search").get(searchUser);
 
 router.param("userId", searchById);
 router.route("/:userId").get(getSingleUserInfo);
