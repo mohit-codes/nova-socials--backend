@@ -18,6 +18,7 @@ const {
   getSingleUserInfo,
   fetchRecentlyJoinedUsers,
   searchUser,
+  getUserChats,
 } = require("../controllers/user.controllers");
 
 router.route("/login").post(login);
@@ -28,6 +29,7 @@ router.route("/search").get(searchUser);
 
 router.param("userId", searchById);
 router.route("/:userId").get(getSingleUserInfo);
+router.route("/chats/:userId").get(getUserChats);
 router.route("/feed/:userId").get(getUserFeed);
 router.route("/followers").post(fetchUserFollowers);
 router.route("/following").post(fetchUserFollowing);
