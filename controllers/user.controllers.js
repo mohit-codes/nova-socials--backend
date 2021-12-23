@@ -348,6 +348,14 @@ const searchUser = async (req, res) => {
     return res.status(500).json({ success: false, message: error.message });
   }
 };
+const getUserChats = async (req, res) => {
+  const { user } = req;
+  const data = await User.find(
+    { _id: { $in: user.chats } },
+    "_id name username email profileUrl"
+  ).catch((err) => console.log(err));
+  return res.status(200).json({ success: true, chats: data });
+};
 
 module.exports = {
   login,
@@ -363,4 +371,5 @@ module.exports = {
   getUserFeed,
   getSingleUserInfo,
   searchUser,
+  getUserChats,
 };
