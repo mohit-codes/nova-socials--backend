@@ -19,7 +19,17 @@ Backend repository for social media web app using ExpressJS connected to MongoDB
 - GET /users/get-user-posts - fetch user posts.
 - PUT /users/update/:userId - update user profile info.
 - GET /users/notifications/:userId - fetch list of user notifications.
-  
+
+### Messages (Socket listeners and emitters)  
+
+- POST messages/get_messages - takes userId and receiverId and fetches encrypted messages.
+- DELETE messages/:messageId - delete message by Id.
+- "connectUser" listener - take user's name and emit array of online users to all connected users listening on event "onlineUsers"
+- "startMessage" listener - take senderId and receiverEmail to add receiver to recipient list.
+- "sendMessage" listener - take sender object, receiver object and message
+  -  emit "newRecipient" event with message info if receiver is not present already in sender's chat list.
+  -  else emit message info to receiver and sender by event "message".
+
 ### Posts
 
 - POST /posts/new - Takes author(userId), content to create new post.

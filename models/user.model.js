@@ -31,6 +31,7 @@ const userSchema = new mongoose.Schema(
     profileUrl: {
       type: String,
     },
+    chats: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
   },
   { timestamps: true }
 );
