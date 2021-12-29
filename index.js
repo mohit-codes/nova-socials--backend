@@ -8,6 +8,7 @@ const { initializeDBConnection } = require("./config/db.config");
 const userRouter = require("./routers/user.router");
 const postRouter = require("./routers/post.router");
 const messageRouter = require("./routers/message.router");
+const authenticate = require("./middleware/authenticate");
 const {
   createMessage,
   startMessage,
@@ -23,8 +24,8 @@ const io = socketio(server, { cors: true });
 initializeDBConnection();
 
 app.use("/users", userRouter);
-app.use("/posts", postRouter);
-app.use("/messages", messageRouter);
+app.use("/posts", authenticate, postRouter);
+app.use("/messages", authenticate, messageRouter);
 
 app.get("/", (req, res) => {
   return res.send({ message: "Welcome" });
@@ -38,7 +39,6 @@ io.on("connection", (socket) => {
   socket.on("connectUser", ({ name }) => {
     //  When the client sends 'name', we store the 'name',
     //  'socket.client.id', and 'socket.id in a Map structure
-    console.log(name, socket.client.id, socket.id);
     connectedUsers.set(name, [socket.client.id, socket.id]);
     io.emit("onlineUsers", Array.from(connectedUsers.keys()));
   });
@@ -54,7 +54,6 @@ io.on("connection", (socket) => {
   });
 
   socket.on("startMessage", ({ senderId, receiverEmail }) => {
-    console.log(senderId, receiverEmail);
     startMessage(senderId, receiverEmail);
   });
 
