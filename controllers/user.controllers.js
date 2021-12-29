@@ -11,7 +11,6 @@ const login = async (req, res) => {
   const user = await User.findOne({ email: email }).catch((err) => {
     console.log(err);
   });
-
   if (user) {
     const isPasswordCorrect = await bcrypt.compare(password, user.password);
     if (isPasswordCorrect) {
@@ -316,6 +315,7 @@ const getUserFeed = async (req, res) => {
     });
     return res.json({ success: true, feed: feed });
   } catch (error) {
+    console.log(error);
     return res.status(500).json({ success: false, message: error.message });
   }
 };
@@ -337,7 +337,7 @@ const searchUser = async (req, res) => {
   try {
     const search = req.query.text;
     const users = await User.find({ $text: { $search: search } }).select(
-      "id name username profileUrl"
+      "id name username profileUrl email"
     );
     if (users.length === 0) {
       return res.json({ success: false, message: "No results" });
