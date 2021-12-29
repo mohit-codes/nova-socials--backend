@@ -127,12 +127,12 @@ const getMessages = (req, res) => {
                         sender: {
                           name: user.name,
                           email: user.email,
-                          id: user._id,
+                          _id: user._id,
                         },
                         receiver: {
                           name: receiver.name,
                           email: receiver.email,
-                          id: receiver._id,
+                          _id: receiver._id,
                         },
                         iv: message.iv,
                         key: message.key,
@@ -145,12 +145,12 @@ const getMessages = (req, res) => {
                         receiver: {
                           name: user.name,
                           email: user.email,
-                          id: user._id,
+                          _id: user._id,
                         },
                         sender: {
                           name: receiver.name,
                           email: receiver.email,
-                          id: receiver._id,
+                          _id: receiver._id,
                         },
                         iv: message.iv,
                         key: message.key,
@@ -179,7 +179,11 @@ const deleteMessageById = (req, res) => {
   const { messageId } = req.params;
   Message.findByIdAndDelete(messageId)
     .then(() => {
-      return res.json({ success: true, message: "message deleted" });
+      return res.json({
+        success: true,
+        message: "message deleted",
+        messageId: messageId,
+      });
     })
     .catch((err) => {
       console.log(err);
@@ -187,9 +191,49 @@ const deleteMessageById = (req, res) => {
     });
 };
 
+const deleteMessages = (senderId, receiverId) => {
+  Message.deleteMany({ sender: senderId, receiver: receiverId })
+    .then(() => {
+      Message.deleteMany({
+        receiver: senderId,
+        sender: receiverId,
+      })
+        .then(() => {
+          return true;
+        })
+        .catch((err) => {
+          console.log(err);
+          return false;
+        });
+    })
+    .catch((err) => {
+      console.log(err);
+      return false;
+    });
+};
+
+const deleteChatByRecipientId = async (req, res) => {
+  const { senderId, recipientId } = req.body;
+
+  const user = await User.findOne({ _id: senderId }).catch((err) => {
+    return res.json({ success: false, message: err.message });
+  });
+  deleteMessages(senderId, recipientId);
+  if (user) {
+    const index = user.chats.indexOf(recipientId);
+    console.log(user.chats);
+    user.chats.splice(index, 1);
+    console.log(user.chats);
+    await user.save();
+    return res.json({ success: true, recipientId: recipientId });
+  }
+  return res.json({ success: false, message: "something is wrong" });
+};
+
 module.exports = {
   getMessages,
   createMessage,
   deleteMessageById,
   startMessage,
+  deleteChatByRecipientId,
 };
