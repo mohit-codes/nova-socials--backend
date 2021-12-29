@@ -1,4 +1,4 @@
-# Twitter-Clone
+# Nova Socials Backend
 
 Backend repository for social media web app using ExpressJS connected to MongoDB through Mongoose.
 - password encrypted.
@@ -24,6 +24,7 @@ Backend repository for social media web app using ExpressJS connected to MongoDB
 
 - POST messages/get_messages - takes userId and receiverId and fetches encrypted messages.
 - DELETE messages/:messageId - delete message by Id.
+- POST messages/delete-chat - takes senderId and recipientId and delete all messages and remove recipient from user chats.
 - "connectUser" listener - take user's name and emit array of online users to all connected users listening on event "onlineUsers"
 - "startMessage" listener - take senderId and receiverEmail to add receiver to recipient list.
 - "sendMessage" listener - take sender object, receiver object and message
