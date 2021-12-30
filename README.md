@@ -3,6 +3,7 @@
 Backend repository for social media web app using ExpressJS connected to MongoDB through Mongoose.
 - password encrypted.
 - Authentication with JWT token.
+- Instant encrypted messaging with Socket.io
 
 ## List of API endpoints
 
@@ -19,6 +20,9 @@ Backend repository for social media web app using ExpressJS connected to MongoDB
 - GET /users/get-user-posts - fetch user posts.
 - PUT /users/update/:userId - update user profile info.
 - GET /users/notifications/:userId - fetch list of user notifications.
+- GET /users/search - Search users by name or username.
+- GET /users/chats/:userId - fetches user's chat recipient list.
+- GET /users/get-recently-joined-users/:userId - fetches recently joined users.
 
 ### Messages (Socket listeners and emitters)  
 
@@ -38,7 +42,8 @@ Backend repository for social media web app using ExpressJS connected to MongoDB
 - POST /posts/unlike - Takes postId and userId.
 - POST /posts/comment - Takes postId, userId and comment.
 - DELETE /posts/comment/:commentId - delete comment.
-- GET /posts/:posts - fetch single post.
-- DELETE /posts/:postId - delete post.
+- GET /posts/:postId - fetch single post.
+- DELETE /posts/delete/:postId - delete post.
 - GET /posts/likes/:postId - fetch list of users liked the post.
 - GET /posts/comments/:posts - fetch comments of posts.
+- PUT /posts/update-post - Takes postId and content and updates post content.
