@@ -105,7 +105,7 @@ const searchById = async (req, res, next, userId) => {
     if (!userObject) {
       return res.json({ success: false, massage: "User not found" });
     }
-    req.user = userObject;
+    req.userProfile = userObject;
     next();
   } catch (error) {
     res.json({
@@ -118,7 +118,7 @@ const searchById = async (req, res, next, userId) => {
 
 const getSingleUserInfo = async (req, res) => {
   try {
-    const { user } = req;
+    const user = req.userProfile;
     return res.json({ success: true, user: user });
   } catch (error) {
     res.json({
@@ -132,7 +132,7 @@ const getSingleUserInfo = async (req, res) => {
 const updateCurrentUserDetails = async (req, res) => {
   try {
     let userUpdate = req.body;
-    let { user } = req;
+    let user = req.userProfile;
 
     let search = await User.findOne({ username: userUpdate.username });
 
@@ -287,7 +287,7 @@ const fetchUserFollowing = async (req, res) => {
 
 const getUserFeed = async (req, res) => {
   try {
-    const { user } = req;
+    const user = req.userProfile;
     let tempFeed = [];
     let posts = await Post.find({ author: user._id });
     tempFeed.push(posts);
@@ -322,7 +322,7 @@ const getUserFeed = async (req, res) => {
 
 const fetchRecentlyJoinedUsers = async (req, res) => {
   try {
-    const { user } = req;
+    const user = req.userProfile;
     const users = await User.find(
       { $and: [{ _id: { $nin: user.following } }, { _id: { $ne: user._id } }] },
       "id name username profileUrl"
@@ -349,7 +349,7 @@ const searchUser = async (req, res) => {
   }
 };
 const getUserChats = async (req, res) => {
-  const { user } = req;
+  const user = req.userProfile;
   const data = await User.find(
     { _id: { $in: user.chats } },
     "_id name username email profileUrl"
