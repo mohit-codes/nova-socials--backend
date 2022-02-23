@@ -53,6 +53,7 @@ const updatePost = async (req, res) => {
     const post = await Post.findById(postId);
     const user = await User.findById(post.author);
     post.content = content;
+    await post.save();
     return res.status(200).json({
       success: true,
       message: "requested post fetched",

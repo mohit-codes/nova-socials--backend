@@ -306,8 +306,8 @@ const getUserFeed = async (req, res) => {
         ...post._doc,
         isLikedByUser: isLikedByUser,
         authorName: author.name,
-        authorUsername: user.username,
-        authorProfileUrl: user.profileUrl,
+        authorUsername: author.username,
+        authorProfileUrl: author.profileUrl,
       });
     }
     feed.sort((a, b) => {
