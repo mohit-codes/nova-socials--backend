@@ -13,10 +13,11 @@ const {
   createMessage,
   startMessage,
 } = require("./controllers/message.controller");
+const corsOptions = require("./utils");
 
 const app = express();
 app.use(express.json());
-app.use(cors());
+app.use(cors(corsOptions));
 
 const server = http.createServer(app);
 const io = socketio(server, { cors: true });
